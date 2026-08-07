@@ -1,0 +1,385 @@
+{
+  "x402Version": 1,
+  "name": "x402-shipping",
+  "description": "Rate shopping and label generation via Shippo/EasyPost test mode — agents ship things, label returned in-response",
+  "homepage": "https://nirholas.github.io/x402-shipping/",
+  "repository": "https://github.com/nirholas/x402-shipping",
+  "contact": "nichxbt@gmail.com",
+  "documentation": "https://nirholas.github.io/x402-shipping/api",
+  "skill": "https://github.com/nirholas/x402-shipping/blob/main/skill.md",
+  "openapi": "https://github.com/nirholas/x402-shipping/blob/main/openapi.json",
+  "resources": [
+    {
+      "resource": "POST /rates",
+      "description": "Rate-shop a parcel across every available carrier service.",
+      "price": "$0.003",
+      "accepts": [
+        {
+          "scheme": "exact",
+          "network": "base-sepolia",
+          "asset": "USDC",
+          "assetAddress": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+          "payTo": "0x40252CFDF8B20Ed757D61ff157719F33Ec332402",
+          "maxAmountRequired": "3000"
+        },
+        {
+          "scheme": "exact",
+          "network": "solana",
+          "asset": "USDC",
+          "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+          "payTo": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW",
+          "maxAmountRequired": "3000",
+          "extra": {
+            "feePayer": "2wKupLR9q6wXYppw8Gr2NvWxKBUqm4PPJKkQfoxHDBg4",
+            "decimals": 6
+          }
+        }
+      ],
+      "network": "base-sepolia",
+      "asset": "USDC",
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "testMode": {
+            "type": "boolean"
+          },
+          "quotedAt": {
+            "type": "string"
+          },
+          "shipmentId": {
+            "type": "string"
+          },
+          "shipment": {
+            "type": "object",
+            "properties": {
+              "from": {
+                "type": "object",
+                "properties": {
+                  "city": {
+                    "type": "string"
+                  },
+                  "state": {
+                    "type": "string"
+                  },
+                  "zip": {
+                    "type": "string"
+                  },
+                  "country": {
+                    "type": "string"
+                  }
+                }
+              },
+              "to": {
+                "type": "object",
+                "properties": {
+                  "city": {
+                    "type": "string"
+                  },
+                  "state": {
+                    "type": "string"
+                  },
+                  "zip": {
+                    "type": "string"
+                  },
+                  "country": {
+                    "type": "string"
+                  }
+                }
+              },
+              "parcel": {
+                "type": "object",
+                "properties": {
+                  "pounds": {
+                    "type": "integer"
+                  },
+                  "cubicFeet": {
+                    "type": "number"
+                  },
+                  "zone": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          },
+          "rateCount": {
+            "type": "integer"
+          },
+          "cheapest": {
+            "type": "object",
+            "properties": {
+              "rateId": {
+                "type": "string"
+              },
+              "carrier": {
+                "type": "string"
+              },
+              "service": {
+                "type": "string"
+              },
+              "serviceToken": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "currency": {
+                "type": "string"
+              },
+              "estimatedDays": {
+                "type": "integer"
+              },
+              "durationTerms": {
+                "type": "string"
+              },
+              "cheapest": {
+                "type": "boolean"
+              },
+              "fastest": {
+                "type": "boolean"
+              }
+            }
+          },
+          "fastest": {
+            "type": "object",
+            "properties": {
+              "rateId": {
+                "type": "string"
+              },
+              "carrier": {
+                "type": "string"
+              },
+              "service": {
+                "type": "string"
+              },
+              "serviceToken": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "currency": {
+                "type": "string"
+              },
+              "estimatedDays": {
+                "type": "integer"
+              },
+              "durationTerms": {
+                "type": "string"
+              },
+              "cheapest": {
+                "type": "boolean"
+              },
+              "fastest": {
+                "type": "boolean"
+              }
+            }
+          },
+          "rates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "rateId": {
+                  "type": "string"
+                },
+                "carrier": {
+                  "type": "string"
+                },
+                "service": {
+                  "type": "string"
+                },
+                "serviceToken": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "number"
+                },
+                "currency": {
+                  "type": "string"
+                },
+                "estimatedDays": {
+                  "type": "integer"
+                },
+                "durationTerms": {
+                  "type": "string"
+                },
+                "cheapest": {
+                  "type": "boolean"
+                },
+                "fastest": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "payment": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean"
+              },
+              "rail": {
+                "type": "string"
+              },
+              "network": {
+                "type": "string"
+              },
+              "transaction": {
+                "type": "string"
+              },
+              "payer": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "string"
+              },
+              "asset": {
+                "type": "string"
+              },
+              "resource": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "resource": "POST /label",
+      "description": "Buy a shipping label for a quoted rate and get the label PDF back in the response.",
+      "price": "$0.02",
+      "accepts": [
+        {
+          "scheme": "exact",
+          "network": "base-sepolia",
+          "asset": "USDC",
+          "assetAddress": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+          "payTo": "0x40252CFDF8B20Ed757D61ff157719F33Ec332402",
+          "maxAmountRequired": "20000"
+        },
+        {
+          "scheme": "exact",
+          "network": "solana",
+          "asset": "USDC",
+          "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+          "payTo": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW",
+          "maxAmountRequired": "20000",
+          "extra": {
+            "feePayer": "2wKupLR9q6wXYppw8Gr2NvWxKBUqm4PPJKkQfoxHDBg4",
+            "decimals": 6
+          }
+        }
+      ],
+      "network": "base-sepolia",
+      "asset": "USDC",
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "testMode": {
+            "type": "boolean"
+          },
+          "purchasedAt": {
+            "type": "string"
+          },
+          "labelId": {
+            "type": "string"
+          },
+          "rateId": {
+            "type": "string"
+          },
+          "carrier": {
+            "type": "string"
+          },
+          "service": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "trackingNumber": {
+            "type": "string"
+          },
+          "trackingUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "labelFormat": {
+            "type": "string"
+          },
+          "labelPdfBase64": {
+            "type": "string"
+          },
+          "labelUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "providerShipmentId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "providerTransactionId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "payment": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean"
+              },
+              "rail": {
+                "type": "string"
+              },
+              "network": {
+                "type": "string"
+              },
+              "transaction": {
+                "type": "string"
+              },
+              "payer": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "string"
+              },
+              "asset": {
+                "type": "string"
+              },
+              "resource": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "free": [
+    {
+      "resource": "GET /health",
+      "description": "Liveness, active data source, and configured payment rails"
+    },
+    {
+      "resource": "GET /.well-known/x402",
+      "description": "This manifest"
+    }
+  ]
+}

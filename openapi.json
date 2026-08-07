@@ -1,0 +1,973 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "x402-shipping",
+    "version": "0.1.0",
+    "description": "Rate shopping and label generation via Shippo/EasyPost test mode — agents ship things, label returned in-response\n\nEvery paid route returns the purchased artifact in the 200 response body. Pay in USDC on Base or Solana — your client picks the rail.",
+    "license": {
+      "name": "Apache-2.0",
+      "identifier": "Apache-2.0"
+    },
+    "contact": {
+      "name": "nirholas",
+      "email": "nichxbt@gmail.com",
+      "url": "https://github.com/nirholas/x402-shipping"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:4023",
+      "description": "Local development"
+    },
+    {
+      "url": "https://your-deployment.example.com",
+      "description": "Your deployment"
+    }
+  ],
+  "tags": [
+    {
+      "name": "paid",
+      "description": "x402-paid routes. An unpaid request answers 402 with both rails."
+    },
+    {
+      "name": "free",
+      "description": "Free routes. No payment required."
+    }
+  ],
+  "paths": {
+    "/rates": {
+      "post": {
+        "operationId": "quoteRates",
+        "summary": "Rate-shop a parcel across every available carrier service.",
+        "description": "Prices a shipment across every carrier service available for the route. Each rate carries a `rateId` you pass to `POST /label`, the carrier and service name, the price and currency, estimated transit days, and the carrier's own duration terms. The response also surfaces `cheapest` and `fastest` directly so a caller doesn't have to sort. Dimensions accept `in` or `cm` and weight accepts `oz`, `lb`, `g` or `kg` — conversion happens server-side.\n\nPrice: **$0.003** in USDC — payable on Base (EVM) or Solana.",
+        "tags": [
+          "paid"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "from": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "street1": {
+                        "type": "string"
+                      },
+                      "city": {
+                        "type": "string"
+                      },
+                      "state": {
+                        "type": "string"
+                      },
+                      "zip": {
+                        "type": "string"
+                      },
+                      "country": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "to": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "street1": {
+                        "type": "string"
+                      },
+                      "city": {
+                        "type": "string"
+                      },
+                      "state": {
+                        "type": "string"
+                      },
+                      "zip": {
+                        "type": "string"
+                      },
+                      "country": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "parcel": {
+                    "type": "object",
+                    "properties": {
+                      "length": {
+                        "type": "integer"
+                      },
+                      "width": {
+                        "type": "integer"
+                      },
+                      "height": {
+                        "type": "integer"
+                      },
+                      "weight": {
+                        "type": "integer"
+                      },
+                      "distanceUnit": {
+                        "type": "string"
+                      },
+                      "massUnit": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              "example": {
+                "from": {
+                  "name": "Acme Robotics",
+                  "street1": "215 Clayton St",
+                  "city": "San Francisco",
+                  "state": "CA",
+                  "zip": "94117",
+                  "country": "US"
+                },
+                "to": {
+                  "name": "Dana Reyes",
+                  "street1": "1600 Pennsylvania Ave NW",
+                  "city": "Washington",
+                  "state": "DC",
+                  "zip": "20500",
+                  "country": "US"
+                },
+                "parcel": {
+                  "length": 10,
+                  "width": 8,
+                  "height": 4,
+                  "weight": 32,
+                  "distanceUnit": "in",
+                  "massUnit": "oz"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "the full carrier rate table with prices, transit days, and `cheapest` / `fastest` flags",
+            "headers": {
+              "X-PAYMENT-RESPONSE": {
+                "description": "Base64 JSON settlement receipt (rail, network, transaction, payer).",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "source": {
+                      "type": "string"
+                    },
+                    "testMode": {
+                      "type": "boolean"
+                    },
+                    "quotedAt": {
+                      "type": "string"
+                    },
+                    "shipmentId": {
+                      "type": "string"
+                    },
+                    "shipment": {
+                      "type": "object",
+                      "properties": {
+                        "from": {
+                          "type": "object",
+                          "properties": {
+                            "city": {
+                              "type": "string"
+                            },
+                            "state": {
+                              "type": "string"
+                            },
+                            "zip": {
+                              "type": "string"
+                            },
+                            "country": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "to": {
+                          "type": "object",
+                          "properties": {
+                            "city": {
+                              "type": "string"
+                            },
+                            "state": {
+                              "type": "string"
+                            },
+                            "zip": {
+                              "type": "string"
+                            },
+                            "country": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "parcel": {
+                          "type": "object",
+                          "properties": {
+                            "pounds": {
+                              "type": "integer"
+                            },
+                            "cubicFeet": {
+                              "type": "number"
+                            },
+                            "zone": {
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "rateCount": {
+                      "type": "integer"
+                    },
+                    "cheapest": {
+                      "type": "object",
+                      "properties": {
+                        "rateId": {
+                          "type": "string"
+                        },
+                        "carrier": {
+                          "type": "string"
+                        },
+                        "service": {
+                          "type": "string"
+                        },
+                        "serviceToken": {
+                          "type": "string"
+                        },
+                        "amount": {
+                          "type": "number"
+                        },
+                        "currency": {
+                          "type": "string"
+                        },
+                        "estimatedDays": {
+                          "type": "integer"
+                        },
+                        "durationTerms": {
+                          "type": "string"
+                        },
+                        "cheapest": {
+                          "type": "boolean"
+                        },
+                        "fastest": {
+                          "type": "boolean"
+                        }
+                      }
+                    },
+                    "fastest": {
+                      "type": "object",
+                      "properties": {
+                        "rateId": {
+                          "type": "string"
+                        },
+                        "carrier": {
+                          "type": "string"
+                        },
+                        "service": {
+                          "type": "string"
+                        },
+                        "serviceToken": {
+                          "type": "string"
+                        },
+                        "amount": {
+                          "type": "number"
+                        },
+                        "currency": {
+                          "type": "string"
+                        },
+                        "estimatedDays": {
+                          "type": "integer"
+                        },
+                        "durationTerms": {
+                          "type": "string"
+                        },
+                        "cheapest": {
+                          "type": "boolean"
+                        },
+                        "fastest": {
+                          "type": "boolean"
+                        }
+                      }
+                    },
+                    "rates": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "rateId": {
+                            "type": "string"
+                          },
+                          "carrier": {
+                            "type": "string"
+                          },
+                          "service": {
+                            "type": "string"
+                          },
+                          "serviceToken": {
+                            "type": "string"
+                          },
+                          "amount": {
+                            "type": "number"
+                          },
+                          "currency": {
+                            "type": "string"
+                          },
+                          "estimatedDays": {
+                            "type": "integer"
+                          },
+                          "durationTerms": {
+                            "type": "string"
+                          },
+                          "cheapest": {
+                            "type": "boolean"
+                          },
+                          "fastest": {
+                            "type": "boolean"
+                          }
+                        }
+                      }
+                    },
+                    "payment": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "rail": {
+                          "type": "string"
+                        },
+                        "network": {
+                          "type": "string"
+                        },
+                        "transaction": {
+                          "type": "string"
+                        },
+                        "payer": {
+                          "type": "string"
+                        },
+                        "amount": {
+                          "type": "string"
+                        },
+                        "asset": {
+                          "type": "string"
+                        },
+                        "resource": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "source": "fixture",
+                  "testMode": true,
+                  "quotedAt": "2026-08-07T12:00:00.000Z",
+                  "shipmentId": "shp_fixture_cf65f479a7323d17",
+                  "shipment": {
+                    "from": {
+                      "city": "San Francisco",
+                      "state": "CA",
+                      "zip": "94117",
+                      "country": "US"
+                    },
+                    "to": {
+                      "city": "Washington",
+                      "state": "DC",
+                      "zip": "20500",
+                      "country": "US"
+                    },
+                    "parcel": {
+                      "pounds": 2,
+                      "cubicFeet": 0.19,
+                      "zone": 8
+                    }
+                  },
+                  "rateCount": 7,
+                  "cheapest": {
+                    "rateId": "rate_fixture_01_usps_ground_advantage",
+                    "carrier": "USPS",
+                    "service": "Ground Advantage",
+                    "serviceToken": "usps_ground_advantage",
+                    "amount": 9.93,
+                    "currency": "USD",
+                    "estimatedDays": 6,
+                    "durationTerms": "Delivery in 2 to 5 business days.",
+                    "cheapest": true,
+                    "fastest": false
+                  },
+                  "fastest": {
+                    "rateId": "rate_fixture_03_usps_priority_express",
+                    "carrier": "USPS",
+                    "service": "Priority Mail Express",
+                    "serviceToken": "usps_priority_express",
+                    "amount": 45.02,
+                    "currency": "USD",
+                    "estimatedDays": 1,
+                    "durationTerms": "Next business day by 6pm to most US addresses.",
+                    "cheapest": false,
+                    "fastest": true
+                  },
+                  "rates": [
+                    {
+                      "rateId": "rate_fixture_01_usps_ground_advantage",
+                      "carrier": "USPS",
+                      "service": "Ground Advantage",
+                      "serviceToken": "usps_ground_advantage",
+                      "amount": 9.93,
+                      "currency": "USD",
+                      "estimatedDays": 6,
+                      "durationTerms": "Delivery in 2 to 5 business days.",
+                      "cheapest": true,
+                      "fastest": false
+                    }
+                  ],
+                  "payment": {
+                    "success": true,
+                    "rail": "evm",
+                    "network": "base-sepolia",
+                    "transaction": "0x9c1f…",
+                    "payer": "0xA11ce…",
+                    "amount": "3000",
+                    "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+                    "resource": "http://localhost:4023/rates"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
+          },
+          "502": {
+            "$ref": "#/components/responses/UpstreamError"
+          }
+        }
+      }
+    },
+    "/label": {
+      "post": {
+        "operationId": "buyLabel",
+        "summary": "Buy a shipping label for a quoted rate and get the label PDF back in the response.",
+        "description": "Purchases the rate you name and returns the artifact inline: `labelPdfBase64` is the complete label document, ready to `Buffer.from(..., \"base64\")` and write to disk. Also returns the tracking number, the carrier's tracking URL where available, and the postage amount actually charged.\n\nIn live mode the `rateId` is all that's needed — the provider already holds the shipment. In fixture mode a rate id references nothing, so re-send the same `from`, `to` and `parcel` you used for `POST /rates`; the service will not invent an address it was never given.\n\nPrice: **$0.02** in USDC — payable on Base (EVM) or Solana.",
+        "tags": [
+          "paid"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "rateId": {
+                    "type": "string"
+                  },
+                  "from": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "street1": {
+                        "type": "string"
+                      },
+                      "city": {
+                        "type": "string"
+                      },
+                      "state": {
+                        "type": "string"
+                      },
+                      "zip": {
+                        "type": "string"
+                      },
+                      "country": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "to": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "street1": {
+                        "type": "string"
+                      },
+                      "city": {
+                        "type": "string"
+                      },
+                      "state": {
+                        "type": "string"
+                      },
+                      "zip": {
+                        "type": "string"
+                      },
+                      "country": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "parcel": {
+                    "type": "object",
+                    "properties": {
+                      "length": {
+                        "type": "integer"
+                      },
+                      "width": {
+                        "type": "integer"
+                      },
+                      "height": {
+                        "type": "integer"
+                      },
+                      "weight": {
+                        "type": "integer"
+                      },
+                      "distanceUnit": {
+                        "type": "string"
+                      },
+                      "massUnit": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              "example": {
+                "rateId": "rate_fixture_01_usps_ground_advantage",
+                "from": {
+                  "name": "Acme Robotics",
+                  "street1": "215 Clayton St",
+                  "city": "San Francisco",
+                  "state": "CA",
+                  "zip": "94117",
+                  "country": "US"
+                },
+                "to": {
+                  "name": "Dana Reyes",
+                  "street1": "1600 Pennsylvania Ave NW",
+                  "city": "Washington",
+                  "state": "DC",
+                  "zip": "20500",
+                  "country": "US"
+                },
+                "parcel": {
+                  "length": 10,
+                  "width": 8,
+                  "height": 4,
+                  "weight": 32,
+                  "distanceUnit": "in",
+                  "massUnit": "oz"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "the label as base64 PDF plus tracking number, tracking URL, carrier, service and the amount charged",
+            "headers": {
+              "X-PAYMENT-RESPONSE": {
+                "description": "Base64 JSON settlement receipt (rail, network, transaction, payer).",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "source": {
+                      "type": "string"
+                    },
+                    "testMode": {
+                      "type": "boolean"
+                    },
+                    "purchasedAt": {
+                      "type": "string"
+                    },
+                    "labelId": {
+                      "type": "string"
+                    },
+                    "rateId": {
+                      "type": "string"
+                    },
+                    "carrier": {
+                      "type": "string"
+                    },
+                    "service": {
+                      "type": "string"
+                    },
+                    "amount": {
+                      "type": "number"
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "trackingNumber": {
+                      "type": "string"
+                    },
+                    "trackingUrl": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "labelFormat": {
+                      "type": "string"
+                    },
+                    "labelPdfBase64": {
+                      "type": "string"
+                    },
+                    "labelUrl": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "providerShipmentId": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "providerTransactionId": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "payment": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "rail": {
+                          "type": "string"
+                        },
+                        "network": {
+                          "type": "string"
+                        },
+                        "transaction": {
+                          "type": "string"
+                        },
+                        "payer": {
+                          "type": "string"
+                        },
+                        "amount": {
+                          "type": "string"
+                        },
+                        "asset": {
+                          "type": "string"
+                        },
+                        "resource": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "source": "fixture",
+                  "testMode": true,
+                  "purchasedAt": "2026-08-07T12:00:00.000Z",
+                  "labelId": "lbl_fixture_6bd6b4c2e73cace7",
+                  "rateId": "rate_fixture_01_usps_ground_advantage",
+                  "carrier": "USPS",
+                  "service": "Ground Advantage",
+                  "amount": 9.93,
+                  "currency": "USD",
+                  "trackingNumber": "9400 1000 0000 1135 3746 69",
+                  "trackingUrl": null,
+                  "labelFormat": "PDF",
+                  "labelPdfBase64": "JVBERi0xLjQKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4K…",
+                  "labelUrl": null,
+                  "providerShipmentId": null,
+                  "providerTransactionId": null,
+                  "payment": {
+                    "success": true,
+                    "rail": "solana",
+                    "network": "solana",
+                    "transaction": "5xkQ…",
+                    "payer": "9wFh…",
+                    "amount": "20000",
+                    "asset": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                    "resource": "http://localhost:4023/label"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
+          },
+          "502": {
+            "$ref": "#/components/responses/UpstreamError"
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "health",
+        "summary": "Liveness probe (free)",
+        "description": "Free. Reports the active data source and the payment rails this instance advertises.",
+        "tags": [
+          "free"
+        ],
+        "responses": {
+          "200": {
+            "description": "Service status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "service": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string"
+                    },
+                    "rails": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "rail": {
+                            "type": "string"
+                          },
+                          "network": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/.well-known/x402": {
+      "get": {
+        "operationId": "manifest",
+        "summary": "x402 discovery manifest (free)",
+        "description": "Free. Machine-readable description of every paid resource and both payment rails.",
+        "tags": [
+          "free"
+        ],
+        "responses": {
+          "200": {
+            "description": "Discovery manifest",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PaymentRequirements": {
+        "type": "object",
+        "description": "One accepted way to pay, as defined by the x402 protocol.",
+        "required": [
+          "scheme",
+          "network",
+          "maxAmountRequired",
+          "resource",
+          "description",
+          "mimeType",
+          "payTo",
+          "maxTimeoutSeconds",
+          "asset"
+        ],
+        "properties": {
+          "scheme": {
+            "type": "string",
+            "enum": [
+              "exact"
+            ]
+          },
+          "network": {
+            "type": "string",
+            "enum": [
+              "base-sepolia",
+              "base",
+              "solana",
+              "solana-devnet"
+            ],
+            "description": "The settlement network. Both an EVM and a Solana entry are always offered."
+          },
+          "maxAmountRequired": {
+            "type": "string",
+            "description": "Price in USDC atomic units (6 decimals). $0.002 → \"2000\"."
+          },
+          "resource": {
+            "type": "string",
+            "format": "uri"
+          },
+          "description": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "payTo": {
+            "type": "string",
+            "description": "EVM address or Solana base58 address."
+          },
+          "maxTimeoutSeconds": {
+            "type": "integer"
+          },
+          "asset": {
+            "type": "string",
+            "description": "USDC contract address (EVM) or SPL mint (Solana)."
+          },
+          "extra": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "PaymentRequiredResponse": {
+        "type": "object",
+        "required": [
+          "x402Version",
+          "accepts"
+        ],
+        "properties": {
+          "x402Version": {
+            "type": "integer",
+            "const": 1
+          },
+          "error": {
+            "type": "string"
+          },
+          "accepts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentRequirements"
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "responses": {
+      "PaymentRequired": {
+        "description": "Payment required. The body lists both rails — pay with USDC on Base or on Solana, then retry with an `X-PAYMENT` header.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/PaymentRequiredResponse"
+            },
+            "example": {
+              "x402Version": 1,
+              "error": "X-PAYMENT header is required",
+              "accepts": [
+                {
+                  "scheme": "exact",
+                  "network": "base-sepolia",
+                  "maxAmountRequired": "3000",
+                  "resource": "http://localhost:4023/rates",
+                  "description": "Rate-shop a parcel across every available carrier service.",
+                  "mimeType": "application/json",
+                  "payTo": "0x40252CFDF8B20Ed757D61ff157719F33Ec332402",
+                  "maxTimeoutSeconds": 60,
+                  "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+                  "extra": {
+                    "name": "USDC",
+                    "version": "2"
+                  }
+                },
+                {
+                  "scheme": "exact",
+                  "network": "solana",
+                  "maxAmountRequired": "3000",
+                  "resource": "http://localhost:4023/rates",
+                  "description": "Rate-shop a parcel across every available carrier service.",
+                  "mimeType": "application/json",
+                  "payTo": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW",
+                  "maxTimeoutSeconds": 60,
+                  "asset": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                  "extra": {
+                    "name": "USD Coin",
+                    "decimals": 6,
+                    "feePayer": "2wKupLR9q6wXYppw8Gr2NvWxKBUqm4PPJKkQfoxHDBg4",
+                    "amount": "3000"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "BadRequest": {
+        "description": "Malformed request parameters.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "UpstreamError": {
+        "description": "The upstream provider failed.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  }
+}
